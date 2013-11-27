@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<!-- Frontend: https://github.com/potch/glow -->
+<!-- Backend: https://github.com/jbalogh/glow -->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>IS Map</title>
+    <!--<link rel="stylesheet" href="media/screen.css?v=6">
+    <link rel="shortcut icon" type="image/x-icon" href="media/favicon.ico">-->
+  </head>
+  <body bgcolor="white">
+    <div align="center" style="position: absolute; left:000px;  top:000px;  overflow: auto;">
+        <input type="button" id="toBar" value="to Bar" onclick="toBar();"/>
+        <input type="button" id="toArc" value="to Arc" onclick="toArc();"/>
+        <input type="button" id="toFlow" value="to Flow" onclick="toFlow();"/>
+        <div id="mousePosition" style="color:white;"></div>
+    </div>
+<div id="svgHolder" style="float:left;" ></div>
+<script src="raphael-min.js"></script>
+<script src="analytics.js"></script>
+<script src="jquery.js"></script>
+<script type="text/javascript" >
+var lines = []
+
+window.onload = function () {
+var ratio = window.innerWidth/3600;
+
+var mouseX= 0;
+var mouseY= 0;
+var IE = document.all?true:false
+var globalScale = 1;
+// If NS -- that is, !IE -- then set up for mouse capture
+if (!IE) document.captureEvents(Event.MOUSEMOVE)
+// Set-up to use getMouseXY function onMouseMove
+document.onmousemove = getMouseXY;
+
+function getMouseXY(e) {
+  if (IE) { // grab the x-y pos.s if browser is IE
+    mouseX= event.clientX + document.body.scrollLeft
+    mouseY = event.clientY + document.body.scrollTop
+  } else {  // grab the x-y pos.s if browser is NS
+    mouseX = e.pageX
+    mouseY = e.pageY
+  }  
+  // catch possible negative values in NS4
+  if (mouseX < 0){mouseX = 0}
+  if (mouseY < 0){mouseY = 0}  
+
+  
+  document.getElementById('mousePosition').innerHTML = mouseX/ratio+" "+mouseY/ratio;
+  return true
+}
+
+function processLines(lines)
+{
+
+
+	newLines = []
+	for(var x=0;x<lines.length;x++)
+	{
+	  
+		line = {}
+
+		line.topControlPoint = {x:lines[x].topControlPoint.x, y:lines[x].topControlPoint.y}
+		line.leftPoint = lines[x].leftPoint;
+		line.rightPoint = lines[x].rightPoint;
+
+			  
+		var baseMidpoint = {x:(lines[x].leftPoint.x+lines[x].rightPoint.x)/2,y:(lines[x].leftPoint.y+lines[x].rightPoint.y)/2}
+		paper.circle(baseMidpoint.x,baseMidpoint.y,10).attr({fill:"green"});  
+
+		var baseLineGradient = calculateGradient(lines[x].leftPoint,lines[x].rightPoint);
+
+		var baseLineB = lines[x].leftPoint.y - baseLineGradient*lines[x].leftPoint.x;
+
+		var perpLineGradient = -1/baseLineGradient;
+		var perpLineB = baseMidpoint.y - perpLineGradient*baseMidpoint.x;
+
+		var c = paper.path("M"+baseMidpoint.x+" "+baseMidpoint.y+"L"+lines[x].topControlPoint.x+" "+lines[x].topControlPoint.y);
+
+		var bottomControlpoint = c.getPointAtLength(c.getTotalLength()-50);
+		paper.circle(bottomControlpoint.x, bottomControlpoint.y, 30).attr({fill:"purple"});  	  
+
+		line.bottomControlpoint = {x:bottomControlpoint.x, y:bottomControlpoint.y}
+		newLines.push(line);
+	  
+	}
+
+  
+  return newLines;
+}
+
+var data = new Array();
+
+data['New York | Cape Town'] = { 
+    leftPoint: {x:0, y:0},
+    rightPoint: {x:0, y:0},
+    controlPoint: {x:0, y:0},
+    lines : new Array("Saab","Volvo","BMW")
+};    
+
+
+
+
+
+
+var barHeight = 30;
+
+var paper = Raphael(10, 50, 320, 200);
+var paper = Raphael(document.getElementById("svgHolder"), window.innerWidth,window.innerHeight);
+var bg = paper.image("world_4.png", 0, 0, window.innerWidth,1800*(window.innerWidth/3600));
+//var bg = paper.image("world_4.png", 0, 0, 3600,1800);
+
+
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:1300*ratio,y:1000*ratio},rightPoint:{x:2000*ratio,y:1200*ratio}}); // new york to capetown ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}}); // london to jhb ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}});
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:2000*ratio,y:-200*ratio},rightPoint:{x:3000*ratio,y:700*ratio}}); // new yourk to hong kong### 
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:1300*ratio,y:1000*ratio},rightPoint:{x:2000*ratio,y:1200*ratio}}); // new york to capetown ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}}); // london to jhb ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}});
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:2000*ratio,y:-200*ratio},rightPoint:{x:3000*ratio,y:700*ratio}}); // new yourk to hong kong### 
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:1300*ratio,y:1000*ratio},rightPoint:{x:2000*ratio,y:1200*ratio}}); // new york to capetown ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}}); // london to jhb ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}});
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:2000*ratio,y:-200*ratio},rightPoint:{x:3000*ratio,y:700*ratio}}); // new yourk to hong kong### 
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:1300*ratio,y:1000*ratio},rightPoint:{x:2000*ratio,y:1200*ratio}}); // new york to capetown ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}}); // london to jhb ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}});
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:2000*ratio,y:-200*ratio},rightPoint:{x:3000*ratio,y:700*ratio}}); // new yourk to hong kong### 
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:1300*ratio,y:1000*ratio},rightPoint:{x:2000*ratio,y:1200*ratio}}); // new york to capetown ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}}); // london to jhb ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}});
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:2000*ratio,y:-200*ratio},rightPoint:{x:3000*ratio,y:700*ratio}}); // new yourk to hong kong### 
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:1300*ratio,y:1000*ratio},rightPoint:{x:2000*ratio,y:1200*ratio}}); // new york to capetown ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}}); // london to jhb ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}});
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:2000*ratio,y:-200*ratio},rightPoint:{x:3000*ratio,y:700*ratio}}); // new yourk to hong kong### 
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:1300*ratio,y:1000*ratio},rightPoint:{x:2000*ratio,y:1200*ratio}}); // new york to capetown ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}}); // london to jhb ### 
+lines.push({leftPoint:{x:1800*ratio,y:500*ratio},topControlPoint:{x:2600*ratio,y:400*ratio},rightPoint:{x:2100*ratio,y:1100*ratio}});
+lines.push({leftPoint:{x:1050*ratio,y:450*ratio},topControlPoint:{x:2000*ratio,y:-200*ratio},rightPoint:{x:3000*ratio,y:700*ratio}}); // new yourk to hong kong### 
+
+
+
+lines = processLines(lines);
+
+
+for(var x=0;x<lines.length;x++)
+{
+
+
+var line = {
+    arc:{
+    leftPoint: {x:lines[x].leftPoint.x, y:lines[x].leftPoint.y},
+    rightPoint: {x:lines[x].rightPoint.x, y:lines[x].rightPoint.y},
+    topControlPoint:{x:lines[x].topControlPoint.x, y:lines[x].topControlPoint.y},
+    bottomControlpoint:{x:lines[x].bottomControlpoint.x, y:lines[x].bottomControlpoint.y},
+    colours: {left:"red",right:"blue"},
+    leftPath: "",
+    rightPath: "",
+    leftCurve: "",
+    rightCurve: "",    
+    id:''
+    },
+    table:{
+    leftPoint:{x:0,y:0},
+    rightPoint:{x:0,y:0},
+    },
+    flow:{
+      flowCurve : ""
+    },
+    status:"arc",
+    getInfo: function (type) {
+        return this.color + ' ' + this.type + ' apple';
+    },
+    initialize:function()
+    {
+	
+	
+      var topPath = "";
+      topPath = "M"+this.arc.leftPoint.x+","+this.arc.leftPoint.y+" Q"+this.arc.topControlPoint.x+","+this.arc.topControlPoint.y+" "+this.arc.rightPoint.x+","+this.arc.rightPoint.y+"";
+      var topCurve = paper.path(topPath );
+      topCurve.hide();
+      var bottomPath = "M"+this.arc.rightPoint.x+","+this.arc.rightPoint.y+" Q"+this.arc.bottomControlpoint.x+","+(this.arc.bottomControlpoint.y)+" "+this.arc.leftPoint.x+","+this.arc.leftPoint.y+"";
+      var bottomCurve = paper.path(bottomPath);
+      bottomCurve.hide();
+      this.id = x;
+
+      this.arc.leftPath = "";
+
+      var subPathTopLeft = topCurve.getSubpath(0,topCurve.getTotalLength()*(45/100));
+      this.arc.leftPath += subPathTopLeft;
+
+      var midPoint = bottomCurve.getPointAtLength(bottomCurve.getTotalLength()/2);
+      this.arc.leftPath += "L"+midPoint.x+","+midPoint.y;
+
+      var subPathBottomLeft = bottomCurve.getSubpath(bottomCurve.getTotalLength()/2,bottomCurve.getTotalLength());
+      this.arc.leftPath += subPathBottomLeft;
+
+
+      this.arc.rightPath = "";
+
+      var subPathTopRight = topCurve.getSubpath(topCurve.getTotalLength()*(55/100),topCurve.getTotalLength());
+      this.arc.rightPath += subPathTopRight;
+
+
+
+      var subPathBottomRight = bottomCurve.getSubpath(bottomCurve.getTotalLength(),bottomCurve.getTotalLength()/2);
+      this.arc.rightPath += subPathBottomRight;
+
+      var midPoint = topCurve.getPointAtLength(topCurve.getTotalLength()*(55/100));
+
+      this.arc.rightPath += "L"+midPoint.x+","+midPoint.y;       
+
+      this.arc.leftCurve = paper.path(this.arc.leftPath);
+      this.arc.leftCurve.attr({fill:this.arc.colours.left});            
+
+      this.arc.rightCurve = paper.path(this.arc.rightPath);
+      this.arc.rightCurve.attr({fill:this.arc.colours.right});
+      rightCircle = paper.circle(this.arc.rightPoint.x,this.arc.rightPoint.y,10);
+      rightCircle.attr({fill:this.arc.colours.right});
+      
+      leftCircle = paper.circle(this.arc.leftPoint.x,this.arc.leftPoint.y,10);
+      leftCircle.attr({fill:this.arc.colours.left});
+      
+      controlCircle = paper.circle(this.arc.topControlPoint.x,this.arc.topControlPoint.y,10);
+      controlCircle.attr({fill:"white"});            
+      
+      
+      
+      
+      
+    count = 0;
+    data = [];
+    data2 = [];
+    $("#data tbody td").each(function () {
+    if(count<31)
+      {data2.push(Math.max(0,$(this).html()-Math.random()*50));count++;}
+     else
+     {
+     
+      data.push($(this).html());count++
+      
+     };
+   });
+
+     paths  = buildFlow(data,data2);
+     this.flow.flowCurve = paths.path;
+     //paper.path(paths.path).attr({fill:'blue',stroke: 'blue', "stroke-width": 1, "stroke-linejoin": "round"});
+     //paper.path(paths.border);      
+      
+      
+      
+      this.arc.rightCurve.mouseover(function (event)
+      {
+          this.animate({fill:'darkred'},600,">");
+      });
+     this.arc.rightCurve.mouseout(function (event)
+      {
+          this.animate({fill:'red'},600,">");
+      });     
+
+     
+            
+    },
+    toBar:function()
+    {
+        this.arc.leftCurve.animate({path:"M0,"+(this.id*barHeight)+" L0,"+(barHeight+this.id*barHeight)+" L600,"+(barHeight+this.id*barHeight)+" L600,"+(this.id*barHeight)+" L0,"+(this.id*barHeight)+"",fill:"blue"},1000,">");
+        this.arc.rightCurve.animate({path:"M600,"+(this.id*barHeight)+" L600,"+(barHeight+this.id*barHeight)+" L1200,"+(barHeight+this.id*barHeight)+" L1200,"+(this.id*barHeight)+" L600,"+(this.id*barHeight)+"",fill:"red"},1000,">");
+        this.status = "bar";
+    },
+    toArc:function()
+    {
+        this.arc.leftCurve.animate({path:this.arc.leftPath,fill:"green"},1000,">");
+        this.arc.rightCurve.animate({path:this.arc.rightPath,fill:"orange"},1000,">");
+        this.status = "arc";
+    },
+    toFlow:function()
+    {
+        this.arc.leftCurve.animate({path:this.flow.flowCurve,fill:"green"},1000,">");
+        this.arc.rightCurve.animate({path:this.flow.flowCurve,fill:"orange"},1000,">");
+        this.status = "flow";
+    }    
+    
+}
+
+
+line.initialize();
+lines[x] = line;
+}
+
+
+function calculateGradient(leftPoint,rightPoint)
+{
+
+if(rightPoint.y == leftPoint.y)
+{
+	return 0.00000000000000000000001;//Math.pow(0.1,-1000);
+}
+else if(rightPoint.x == leftPoint.x)
+{
+	return Infinity;
+}
+else
+{
+	return (rightPoint.y-leftPoint.y)/(rightPoint.x-leftPoint.x);
+}
+}
+
+}
+
+function toBar()
+{
+    for(var x=0;x<lines.length;x++)
+    {
+        lines[x].toBar();
+    }
+}
+function toArc()
+{
+    for(var x=0;x<lines.length;x++)
+    {
+        lines[x].toArc();
+    }
+}
+function toFlow()
+{
+    for(var x=0;x<lines.length;x++)
+    {
+        lines[x].toFlow();
+    }
+}
+
+
+</script>
+
+          <table id="data">
+            <tfoot>
+                <tr>
+                    <th>1</th>
+                    <th>2</th>
+                    <th>3</th>
+                    <th>4</th>
+                    <th>5</th>
+                    <th>6</th>
+                    <th>7</th>
+                    <th>8</th>
+                    <th>9</th>
+                    <th>10</th>
+                    <th>11</th>
+                    <th>12</th>
+                    <th>13</th>
+                    <th>14</th>
+                    <th>15</th>
+                    <th>16</th>
+                    <th>17</th>
+                    <th>18</th>
+                    <th>19</th>
+                    <th>19</th>
+                    <th>20</th>
+                    <th>22</th>
+                    <th>23</th>
+                    <th>24</th>
+                    <th>25</th>
+                    <th>26</th>
+                    <th>27</th>
+                    <th>28</th>
+                    <th>29</th>
+                    <th>30</th>
+                    <th>31</th>
+                </tr>
+            </tfoot>
+            <tbody>
+                <tr>
+                    <td>8</td>
+                    <td>25</td>
+                    <td>27</td>
+                    <td>25</td>
+                    <td>54</td>
+                    <td>59</td>
+                    <td>79</td>
+                    <td>47</td>
+                    <td>27</td>
+                    <td>44</td>
+                    <td>44</td>
+                    <td>51</td>
+                    <td>56</td>
+                    <td>83</td>
+                    <td>12</td>
+                    <td>91</td>
+                    <td>52</td>
+                    <td>12</td>
+                    <td>40</td>
+                    <td>8</td>
+                    <td>60</td>
+                    <td>29</td>
+                    <td>7</td>
+                    <td>33</td>
+                    <td>56</td>
+                    <td>25</td>
+                    <td>1</td>
+                    <td>78</td>
+                    <td>70</td>
+                    <td>68</td>
+                    <td>20</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>25</td>
+                    <td>27</td>
+                    <td>25</td>
+                    <td>54</td>
+                    <td>59</td>
+                    <td>79</td>
+                    <td>47</td>
+                    <td>27</td>
+                    <td>44</td>
+                    <td>44</td>
+                    <td>51</td>
+                    <td>56</td>
+                    <td>83</td>
+                    <td>12</td>
+                    <td>91</td>
+                    <td>52</td>
+                    <td>12</td>
+                    <td>40</td>
+                    <td>8</td>
+                    <td>60</td>
+                    <td>29</td>
+                    <td>7</td>
+                    <td>33</td>
+                    <td>56</td>
+                    <td>25</td>
+                    <td>1</td>
+                    <td>78</td>
+                    <td>70</td>
+                    <td>68</td>
+                    <td>20</td>
+                </tr>
+
+            </tbody>
+        </table>
+  </body>
